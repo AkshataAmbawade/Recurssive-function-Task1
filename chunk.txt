@@ -1,0 +1,16 @@
+const user_details=async(req,res)=>{
+    try{
+       let data=await user.find()
+    //    console.log(data)
+       chunkData=chunk(data,2000)
+       console.log(chunkData)
+       for (const chunk of chunkData) {
+        await usersDetails.insertMany(chunk);
+      }
+       res.send("send")
+    }catch(err){console.log(err);}
+}
+
+for(let i=0;i<index ;i++){
+        const result = usersDetails.insertMany(chunkData[i])
+    }
