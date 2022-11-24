@@ -14,3 +14,34 @@ const user_details=async(req,res)=>{
 for(let i=0;i<index ;i++){
         const result = usersDetails.insertMany(chunkData[i])
     }
+
+
+                const arr=chunkData;
+                const newArr=arr.map(myFunction);
+
+                console.log(newArr)
+                function myFunction(chunkData){
+                    return chunkData
+                }
+                const result=await usersDetails.bulkWrite([{insertOne:{"document":{newArr}}}])
+
+
+
+
+
+  const myFunc=(data)=>{
+                    const details={
+                        name:data.name,
+                        email:data.email,
+                        phoneNo:data.phoneNo
+                    }
+                    return {insertOne:{document:details}}
+                }
+                const arr=chunkData[i]
+             const newArr=  arr.map(myFunc)
+                const result=await usersDetails.bulkWrite(newArr)
+                insertData(chunkData, ++i)
+            } else {
+                // console.log(chunkData);
+                res.send("send")
+            }

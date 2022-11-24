@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const user = require('../Models/schema')
 const usersDetails = require("../Models/usersSchema")
-const chunk = require("chunk")
+const chunk = require("chunk");
+const { mapReduce } = require('../Models/schema');
 const user_info = async (req, res) => {
     try {
         // const data = req.body
@@ -68,17 +69,40 @@ const user_details = async (req, res) => {
         let chunkDataLength = chunkData.length
         console.log(chunkDataLength)
         //    console.log(chunkData)
-        function insertData(chunkData,i){
-            if(chunkDataLength != i){
+        async function insertData(chunkData, i) {
+            if (chunkDataLength != i) {
+                // console.log(i)
                 // const result=usersDetails.insertMany(chunkData[i]);
-                const result=usersDetails.bulkWrite([{insertOne:{"document":{name:chunkData[i]}}}])
-                insertData(chunkData,++i)
-            }else{
-                console.log(chunkData);
-              res.send("send")
+                // res.send("ok")
+                // const result=await usersDetails.bulkWrite([{insertOne:{"document":{chunkData}}}])
+
+                const myFunc = (user) => {
+                    const details = {
+                        name: user.name,
+                        email: user.email,
+                        phoneNo: user.phoneNo
+                    }
+                    return { insertOne: { document: details } }
+                }
+                const arr = chunkData[i]
+                const newArr = arr.map(myFunc)
+                const result = await usersDetails.bulkWrite(newArr)
+                insertData(chunkData, ++i)
+            } else {
+                // console.log(chunkData);
+                res.send("send")
             }
+            // const arr=chunkData;
+            // const newArr=arr.map(myFunction);
+
+            // console.log(newArr)
+            // function myFunction(chunkData){
+            //     return chunkData
+            // }
+            // const result=await usersDetails.bulkWrite([{insertOne:{"document":{newArr}}}])
+
         }
-        insertData(chunkData,0)
+        insertData(chunkData, 0)
     } catch (err) { console.log(err); }
 }
 
