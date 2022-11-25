@@ -45,3 +45,56 @@ for(let i=0;i<index ;i++){
                 // console.log(chunkData);
                 res.send("send")
             }
+
+
+
+               async function saveData(data,page) {
+            if (page != data.length) {
+                const myFunc = (user) => {
+                    const details = {
+                        name: user.name,
+                        email: user.email,
+                        phoneNo: user.phoneNo
+                    }
+                    return { insertOne: { document: details } }
+                }
+                const arr = page
+                console.log(arr);
+                // const newArr = arr.map(myFunc)
+                // const result = await usersDetails.bulkWrite(newArr)
+                saveData(data,page++)
+            } else {
+              
+                res.send("send")
+            }
+        }
+        saveData(data,0)
+
+
+
+
+        try {
+        let data = await user.find()
+        //    console.log(data)
+        //    console.log(data.length)
+        async function saveData(data,i){
+            if (page.length != i){
+                const myFunc = (user) => {
+                    const details = {
+                        name: user.name,
+                        email: user.email,
+                        phoneNo: user.phoneNo
+                    }
+                    return { insertOne: { document: details } }
+                }
+                const arr=page[i];
+                const newArr=arr.map(myFunc);
+                const result=await paginationUser.bulkWrite(newArr);
+                saveData(page,i++);
+            }
+            else{
+                res.send("send")
+            }
+        } 
+        saveData(page,0)
+            }

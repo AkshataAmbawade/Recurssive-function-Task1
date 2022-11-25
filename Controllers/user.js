@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const user = require('../Models/schema')
-const usersDetails = require("../Models/usersSchema")
+const usersDetails = require("../Models/usersSchema");
+const paginationUser = require("../Models/pagination");
+const userPaginations = require("../Models/userpagination")
 const chunk = require("chunk");
-const { mapReduce } = require('../Models/schema');
+const usersSchema = require('../Models/usersSchema');
 const user_info = async (req, res) => {
     try {
         // const data = req.body
@@ -64,17 +66,11 @@ const user_info = async (req, res) => {
 const user_details = async (req, res) => {
     try {
         let data = await user.find()
-        //    console.log(data)
         chunkData = chunk(data, 1000)
         let chunkDataLength = chunkData.length
         console.log(chunkDataLength)
-        //    console.log(chunkData)
         async function insertData(chunkData, i) {
             if (chunkDataLength != i) {
-                // console.log(i)
-                // const result=usersDetails.insertMany(chunkData[i]);
-                // res.send("ok")
-                // const result=await usersDetails.bulkWrite([{insertOne:{"document":{chunkData}}}])
 
                 const myFunc = (user) => {
                     const details = {
@@ -89,23 +85,80 @@ const user_details = async (req, res) => {
                 const result = await usersDetails.bulkWrite(newArr)
                 insertData(chunkData, ++i)
             } else {
-                // console.log(chunkData);
                 res.send("send")
             }
-            // const arr=chunkData;
-            // const newArr=arr.map(myFunction);
 
-            // console.log(newArr)
-            // function myFunction(chunkData){
-            //     return chunkData
-            // }
-            // const result=await usersDetails.bulkWrite([{insertOne:{"document":{newArr}}}])
 
         }
         insertData(chunkData, 0)
     } catch (err) { console.log(err); }
 }
+async function getData() {
+    const data = await user.find()
+    if (data.length != 0) {
+        return { status: true, data: data };
+
+    } else {
+        return { status: false, data: null }
+    }
+}
+
+const info = async (req, res) => {
+    try {
+        async function paginationData() {
+            const pagination = await getData()
+
+            if (pagination.status == true) {
+                const newArr = pagination.data.map(userInfo)
+                const result = await paginationUser.bulkWrite(newArr)
+                res.status(200).json(result)
+            } else {
+
+                res.status(500).json(err)
+            }
+        }
+        paginationData()
+    } catch (err) {
+        console.log(err.message)
+    }
+}
+
+async function fetchData(page, limit) {
+    const data = await user.find().skip((page - 1) * limit).limit(limit);
+    if (data.length !== 0) {
+        return { status: true, data: data };
+
+    } else {
+        return { status: false, data: null }
+    }
+}
+const uInfo = (user) => {
+    const details = {
+        name: user.name,
+        email: user.email,
+        phoneNo: user.phoneNo
+    }
+    return { insertOne: { document: details } }
+}
+const pageLimit = async (req, res) => {
+    try {
+        async function func(page, limit) {
+            const pagination = await fetchData(1,2)
+            if (pagination.status == true) {
+                const newArr = pagination.data.map(uInfo)
+                const result = await userPaginations.bulkWrite(newArr)
+                func(++page, limit)
+            } else {
+                res.status(200).json("Saved")
+            }
+        }
+        func(1, 2)
+    } catch (err) {
+        res.status(500).json(err)
+    }
+}
 
 
 
-module.exports = { user_info, user_details }
+
+module.exports = { user_info, user_details, info, pageLimit }
