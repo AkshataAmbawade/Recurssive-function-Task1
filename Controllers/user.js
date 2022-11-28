@@ -7,7 +7,6 @@ const chunk = require("chunk");
 const usersSchema = require('../Models/usersSchema');
 const user_info = async (req, res) => {
     try {
-        // const data = req.body
         for (let i = 0; i < 2000; i++) {
             const result = await user.bulkWrite([
                 {
@@ -124,7 +123,9 @@ const info = async (req, res) => {
 }
 
 async function fetchData(page, limit) {
+    // console.log(page)
     const data = await user.find().skip((page - 1) * limit).limit(limit);
+    // console.log(page)
     if (data.length !== 0) {
         return { status: true, data: data };
 
@@ -142,17 +143,20 @@ const uInfo = (user) => {
 }
 const pageLimit = async (req, res) => {
     try {
-        async function func(page, limit) {
-            const pagination = await fetchData(1,2)
+        async function func(page_, limit_) {
+            let page = page_ 
+            let limit =limit_
+            const pagination = await fetchData(page,limit)
             if (pagination.status == true) {
                 const newArr = pagination.data.map(uInfo)
                 const result = await userPaginations.bulkWrite(newArr)
+                // res.status(200).json("Saved")
                 func(++page, limit)
             } else {
                 res.status(200).json("Saved")
             }
         }
-        func(1, 2)
+        func(1, 10)
     } catch (err) {
         res.status(500).json(err)
     }
